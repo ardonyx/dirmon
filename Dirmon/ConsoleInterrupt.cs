@@ -8,7 +8,7 @@ namespace Dirmon
     public static class ConsoleInterrupt
     {
         /// <summary>
-        /// Called when the specified ctrltype is detected
+        /// Called when the specified CtrlTypes is detected
         /// </summary>
         /// <param name="ctrlType"></param>
         public delegate bool HandlerRoutine(CtrlTypes ctrlType);

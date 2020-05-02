@@ -9,7 +9,7 @@ namespace Dirmon
     /// Use this tool to monitor a specified directory for file add/edit/delete operations.
     /// Optionally, files can be shadowed copied to monitor the change history of files.
     /// </summary>
-    internal class Program
+    internal static class Program
     {
         private static readonly CancellationTokenSource TokenSource = new CancellationTokenSource();
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();

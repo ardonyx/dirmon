@@ -39,7 +39,8 @@ namespace Dirmon
         /// Returns the version of this assembly
         /// </summary>
         public static string AppVersion => typeof(Options).Assembly
-            .GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+            .GetCustomAttribute<AssemblyFileVersionAttribute>()
+            ?.Version;
 
         /// <summary>
         /// Parse CLI options into Options instance
@@ -47,7 +48,6 @@ namespace Dirmon
         /// <param name="args">Program launch arguments</param>
         public static Options Parse(IEnumerable<string> args)
         {
-
             string monitorDir = null;
             string shadowDir = null;
             var purgeShadowDir = false;

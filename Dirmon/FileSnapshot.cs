@@ -5,7 +5,7 @@ namespace Dirmon
     /// <summary>
     /// Captures data about a file being monitored
     /// </summary>
-    readonly struct FileSnapshot
+    internal readonly struct FileSnapshot
     {
         public FileSnapshot(int sequence, string fileName, string text)
         {
