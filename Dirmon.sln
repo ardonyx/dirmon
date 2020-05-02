@@ -2,6 +2,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dirmon", "Dirmon\Dirmon.csproj", "{6D4E9621-BCDF-4628-939B-A4F2CB92C464}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{1C2117A8-9FD9-4D79-80DB-643FD37A109E}"
+ProjectSection(SolutionItems) = preProject
+	LICENSE = LICENSE
+	readme.md = readme.md
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

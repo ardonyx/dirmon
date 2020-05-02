@@ -1,8 +1,34 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <SemVer>1.0.0.0</SemVer>
+        <Suffix></Suffix>
+        <LangVersion>latest</LangVersion>
+        <Year>2020</Year>
+    </PropertyGroup>
+    
+    <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp3.1</TargetFramework>
+        <Title>Dirmon</Title>
+        <Platforms>AnyCPU</Platforms>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Authors>Ardonyx LLC</Authors>
+        <Company>Ardonyx LLC</Company>
+        <Description>A directory and file monitoring tool</Description>
+        <Copyright>$(Year) Ardonx LLC</Copyright>
+        <Version>$(SemVer)$(Suffix)</Version>
+        <PackageProjectUrl>https://github.com/ardonyx/dirmon</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/ardonyx/dirmonx</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <AssemblyVersion>$(SemVer)</AssemblyVersion>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <FileVersion>$(SemVer)</FileVersion>
+        <IncludeSource>true</IncludeSource>
+        <IncludeSymbols>true</IncludeSymbols>
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
     <ItemGroup>

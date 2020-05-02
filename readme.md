@@ -1,9 +1,9 @@
 # Dirmon
 
 A tool for monitoring a single directory for file modifications. This is tool is specifically designed to capture 
-ephemeral state that changes to quickly to easily capture with other tools. As an example, during the installation 
-or launch of certain programs, temporary files may be quickly created and deleted. This tool allows you to quickly
-pull the contents into memory which can printed to console or written to disk at a later time. 
+ephemeral state that changes too quickly to easily capture with other tools. As an example, during the installation 
+or launch of certain programs, temporary files may be created and deleted in rapid succession. This tool allows you to 
+quickly pull the contents into memory which can printed to console or written to disk at a later time. 
 
 ## Why Dirmon 
 
@@ -13,7 +13,7 @@ interested in.
 
 ## Usage 
 
-Dirmon takes requires to parameters:
+Dirmon requires two parameters:
 
 1) Monitor : the directory to monitor. This is a non-recursive directory monitor that will be watched for any file 
 changes. 
@@ -24,8 +24,10 @@ In the event of a file change, Dirmon will attempt to open the file in read-shar
 memory. Once captured, the contents are passed to a background thread for processing. This is because some files exist 
 for a very short amount of time and may be missed if the read process takes too long. 
 
+Upon capture, the contents will be logged and an attempt will be made to write them to disk.
+
 ### Other Features 
 
-* Purge Shadow directory : Set this flag to clear the previous shadow directory of snapshots. Defaults to off. 
-* Display Binary : A best-effort is made to not display the contents of binary files on the console. Set this flag to 
+* Purge Shadow directory - Set this flag to clear the previous shadow directory of snapshots. Defaults to off. 
+* Display Binary - A best-effort is made to not display the contents of binary files on the console. Set this flag to 
 true to print binaries to your console. 

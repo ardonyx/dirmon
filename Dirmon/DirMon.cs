@@ -7,6 +7,9 @@ using NLog;
 
 namespace Dirmon
 {
+    /// <summary>
+    /// Directory monitoring service
+    /// </summary>
     internal class DirMon : IDisposable
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
