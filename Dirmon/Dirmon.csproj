@@ -48,6 +48,10 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="ConsoleInterrupt.cs" />
+        <Compile Include="DirMon.cs" />
+        <Compile Include="FileSnapshot.cs" />
+        <Compile Include="Options.cs" />
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
