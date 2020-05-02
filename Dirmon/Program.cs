@@ -26,14 +26,14 @@ namespace Dirmon
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 Console.WriteLine(Options.Usage());
+                Console.WriteLine(ex.Message);
                 return;
             }
 
             var dirMon = new DirMon(opts.MonitorDir, opts.ShadowDir, TokenSource.Token)
             {
-                TryFilterBinaryContent = opts.NoDisplayBinary,
+                DisplayBinary = opts.DisplayBinary,
                 PurgeShadowDir = opts.PurgeShadowDir
             };
 

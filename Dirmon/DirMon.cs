@@ -73,16 +73,18 @@ namespace Dirmon
         public bool PurgeShadowDir { get; set; }
 
         /// <summary>
-        /// When set, an effort will be made to not print binary file contents to console
-        /// In this case, the file will only be copied
+        /// When set, binary files will not be filtered from console output
         /// </summary>
-        public bool TryFilterBinaryContent { get; set; }
+        public bool DisplayBinary { get; set; }
 
         /// <summary>
         /// Start monitoring immediately
         /// </summary>
         public Task Start()
         {
+            Logger.Debug(
+                $"Starting monitor Watch={MonitorDir}, Shadow={ShadowDir}, Purge={PurgeShadowDir}, PrintBin={DisplayBinary}");
+
             // Setup shadow directory
             if (!string.IsNullOrEmpty(ShadowDir))
             {
@@ -90,14 +92,14 @@ namespace Dirmon
                 {
                     Directory.Delete(ShadowDir, true);
 
-                    Logger.Info("Purged shadow directory");
+                    Logger.Debug("Purged shadow directory");
                 }
 
                 if (!Directory.Exists(ShadowDir))
                 {
                     Directory.CreateDirectory(ShadowDir);
 
-                    Logger.Info("Created shadow directory");
+                    Logger.Debug("Created shadow directory");
                 }
             }
 
@@ -203,9 +205,9 @@ namespace Dirmon
 
                 var outPath = Path.Combine(ShadowDir, $"{snapshot.Sequence}_{snapshot.FileName}");
 
-                if (!TryFilterBinaryContent || TryFilterBinaryContent && !snapshot.HasBinaryContent())
+                if (!DisplayBinary || DisplayBinary && !snapshot.HasBinaryContent())
                 {
-                    Logger.Warn("Snapshot: {0}", snapshot.Contents);
+                    Logger.Warn("Snapshot {0}: {1}", snapshot.FileName, snapshot.Contents);
                 }
                 else
                 {

@@ -1,39 +1,41 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
 namespace Dirmon
 {
-    internal readonly struct Options
+    internal class Options
     {
-        private Options(string monitorDir, string shadowDir, bool purgeShadowDir, bool noDisplayBinary)
-        {
-            MonitorDir = monitorDir;
-            ShadowDir = shadowDir;
-            PurgeShadowDir = purgeShadowDir;
-            NoDisplayBinary = noDisplayBinary;
-        }
-
         /// <summary>
         /// Path to directory to monitor
         /// </summary>
-        public string MonitorDir { get; }
+        [ArgumentAttribute("monitor", ShortName = 'm', Description = "Path to directory to monitor",
+            Example = "--monitor /path/to/file", Required = true)]
+        public string MonitorDir { get; private set; }
 
         /// <summary>
         /// Path to shadow backup directory
         /// </summary>
-        public string ShadowDir { get; }
+        [ArgumentAttribute("shadow", ShortName = 's', Description = "Path to directory to receive file change copies",
+            Example = "--shadow /path/to/shadow",
+            Required = true)]
+        public string ShadowDir { get; private set; }
 
         /// <summary>
         /// If true, purge existing shadow backup
         /// </summary>
-        public bool PurgeShadowDir { get; }
+        [ArgumentAttribute("purge-shadow", ShortName = 'p', Description = "Purge existing shadow directory",
+            IsFlag = true)]
+        public bool PurgeShadowDir { get; private set; }
 
         /// <summary>
-        /// Try not to display the contents of binary files on the console
+        /// Do not try to filter binary files from console display
         /// </summary>
-        public bool NoDisplayBinary { get; }
+        [ArgumentAttribute("display-binary", ShortName = 'b',
+            Description = "Try not to print binary contents to console", IsFlag = true)]
+        public bool DisplayBinary { get; private set; }
 
         /// <summary>
         /// Returns the version of this assembly
@@ -48,54 +50,70 @@ namespace Dirmon
         /// <param name="args">Program launch arguments</param>
         public static Options Parse(IEnumerable<string> args)
         {
-            string monitorDir = null;
-            string shadowDir = null;
-            var purgeShadowDir = false;
-            var noDisplayBinary = false;
+            var opts = new Options();
+            var attrs = GetArgumentAttributes(opts).ToList();
+            var required = attrs.Where(a => a.Required).ToList();
+            var seen = new List<string>();
 
             // Use a capture action for two-part key:value options
             Action<string> nextCapture = null;
             foreach (var s in args)
             {
-                // No pending capture
+                // No pending capture, read as key
                 if (nextCapture is null)
                 {
-                    switch (s)
+                    // Make sure this is not a duplicate input
+                    if (seen.Contains(s))
                     {
-                        case "-m":
-                        case "--monitor":
-                            nextCapture = t => monitorDir = t;
-                            break;
-
-                        case "-s":
-                        case "--shadow":
-                            nextCapture = t => shadowDir = t;
-                            break;
-
-                        case "-p":
-                        case "--purge-shadow-dir":
-                            purgeShadowDir = true;
-                            break;
-
-                        case "-n":
-                        case "--no-display-binary":
-                            noDisplayBinary = true;
-                            break;
-                        
-                        default:
-                            throw new Exception($"Unknown parameter: {s}");
+                        throw new Exception($"Duplicate parameter specified {s}");
                     }
+
+                    // Since the attributes are built from properties which cannot be duplicated in the
+                    // same type, there can never be more than once match. Null means unknown input.
+                    var match = attrs.FirstOrDefault(a => a.IsMatch(s));
+                    if (match is null)
+                    {
+                        throw new Exception($"Unknown parameter: {s}");
+                    }
+
+                    if (match.IsFlag)
+                    {
+                        SetProperty(opts, match, true);
+                    }
+                    else
+                    {
+                        nextCapture = value => SetProperty(opts, match, value);
+                    }
+
+                    // Clear from required list if present
+                    if (match.Required)
+                    {
+                        required.Remove(match);
+                    }
+
+                    // Mark this option as seen
+                    seen.Add(s);
                 }
                 else
                 {
+                    // Previous input was a key, capture the value
                     nextCapture.Invoke(s);
                     nextCapture = null;
                 }
             }
 
-            var opts = new Options(monitorDir, shadowDir, purgeShadowDir, noDisplayBinary);
+            if (required.Any())
+            {
+                // Then show the problem
+                var sb = new StringBuilder();
+                sb.AppendLine("Missing required parameters:");
+                foreach (var r in required)
+                {
+                    sb.AppendLine($"\t{r.Usage}");
+                }
 
-            opts.Validate();
+                throw new Exception(sb.ToString());
+            }
 
             return opts;
         }
@@ -105,30 +123,77 @@ namespace Dirmon
         /// </summary>
         public static string Usage()
         {
+            var attrs = GetArgumentAttributes(new Options()).ToList();
+
             var sb = new StringBuilder();
             sb.AppendLine($"Dirmon v{AppVersion}");
-            sb.AppendLine("Usage --monitor|-m --shadow|-s [--purge-shadow|-p] [--no-display-binary|-n]");
-            sb.AppendLine("--monitor,-m\tPath to directory to monitor");
-            sb.AppendLine("--shadow,-s\tPath to directory to receive file change copies");
-            sb.AppendLine("--purge-shadow,-p\tPurge existing shadow directory");
-            sb.AppendLine("--no-display-binary,-b\tTry not to print binary contents to console");
+
+            // Usage section
+            sb.AppendLine("Usage:");
+            sb.Append("\tDirmon.exe ");
+            foreach (var attr in attrs)
+            {
+                sb.Append($"{attr.Usage} ");
+            }
+
+            sb.AppendLine();
+
+            // Required arg description section
+            sb.AppendLine();
+            sb.AppendLine("Required:");
+            foreach (var attr in attrs.Where(a => a.Required))
+            {
+                sb.AppendLine($"\t{attr.Usage}\t{attr.Description}. {attr.Example}");
+            }
+
+            // Optional arg description section
+            sb.AppendLine();
+            sb.AppendLine("Optional:");
+            foreach (var attr in attrs.Where(a => !a.Required))
+            {
+                sb.AppendLine($"\t{attr.Usage}\t{attr.Description}. {attr.Example}");
+            }
+
             return sb.ToString();
         }
 
         /// <summary>
-        /// Check for invalid parameters
+        /// Returns list of argument attributes on all properties of this instance
         /// </summary>
-        /// <exception cref="Exception">Raised if invalid parameters are found</exception>
-        private void Validate()
+        /// <returns>List of attributes</returns>
+        private static IEnumerable<ArgumentAttribute> GetArgumentAttributes(Options instance)
         {
-            if (string.IsNullOrEmpty(MonitorDir))
+            var props = instance.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+            var result = new List<ArgumentAttribute>();
+            foreach (var prop in props)
             {
-                throw new Exception("--monitor is required");
+                var attrs = prop.GetCustomAttributes(typeof(ArgumentAttribute), false);
+                foreach (var attr in attrs)
+                {
+                    if (attr is ArgumentAttribute t)
+                    {
+                        result.Add(t);
+                    }
+                }
             }
 
-            if (string.IsNullOrEmpty(ShadowDir))
+            return result;
+        }
+
+        /// <summary>
+        /// Helper to set a property by name
+        /// </summary>
+        /// <param name="instance">Instance to modify</param>
+        /// <param name="attr">Attribute describing target</param>
+        /// <param name="value">New value to set</param>
+        private static void SetProperty<T>(Options instance, ArgumentAttribute attr, T value)
+        {
+            var prop = instance.GetType().GetProperty(attr.PropertyName,
+                BindingFlags.Public | BindingFlags.Instance);
+            if (null != prop && prop.CanWrite)
             {
-                throw new Exception("--shadow is required");
+                prop.SetValue(instance, value, null);
             }
         }
     }
