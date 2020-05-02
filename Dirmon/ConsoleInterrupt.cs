@@ -16,6 +16,7 @@ namespace Dirmon
         /// <summary>
         /// Console event types
         /// </summary>
+        // ReSharper disable UnusedMember.Global
         public enum CtrlTypes
         {
             CtrlCEvent = 0,
@@ -24,6 +25,7 @@ namespace Dirmon
             CtrlLogoffEvent = 5,
             CtrlShutdownEvent
         }
+        // ReSharper restore UnusedMember.Global
 
         [DllImport("Kernel32")]
         public static extern bool SetConsoleCtrlHandler(HandlerRoutine handler, bool add);

@@ -8,9 +8,9 @@ namespace Dirmon
     /// </summary>
     public class ArgumentAttribute : Attribute
     {
-        public const string LongNamePrefix = "--";
+        private const string LongNamePrefix = "--";
 
-        public const string ShortNamePrefix = "-";
+        private const string ShortNamePrefix = "-";
 
         /// <summary>
         ///     Specify the string that identifies this argument excluding
@@ -39,7 +39,7 @@ namespace Dirmon
         ///     LongNamePrefix and uses a single '-' on
         ///     word boundaries
         /// </summary>
-        public string LongName { get; }
+        private string LongName { get; }
 
         /// <summary>
         ///     The short name of the option is preceded by 

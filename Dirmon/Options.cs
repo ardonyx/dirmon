@@ -4,6 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
+// We are using reflection to set properties on Options class
+// ReSharper disable UnusedAutoPropertyAccessor.Local
+
 namespace Dirmon
 {
     internal class Options
@@ -57,31 +60,33 @@ namespace Dirmon
 
             // Use a capture action for two-part key:value options
             Action<string> nextCapture = null;
-            foreach (var s in args)
+            foreach (var key in args)
             {
                 // No pending capture, read as key
                 if (nextCapture is null)
                 {
                     // Make sure this is not a duplicate input
-                    if (seen.Contains(s))
+                    if (seen.Contains(key))
                     {
-                        throw new Exception($"Duplicate parameter specified {s}");
+                        throw new Exception($"Duplicate parameter specified {key}");
                     }
 
                     // Since the attributes are built from properties which cannot be duplicated in the
                     // same type, there can never be more than once match. Null means unknown input.
-                    var match = attrs.FirstOrDefault(a => a.IsMatch(s));
+                    var match = attrs.FirstOrDefault(a => a.IsMatch(key));
                     if (match is null)
                     {
-                        throw new Exception($"Unknown parameter: {s}");
+                        throw new Exception($"Unknown parameter: {key}");
                     }
 
+                    // Boolean flag, presence of which means "true"
                     if (match.IsFlag)
                     {
                         SetProperty(opts, match, true);
                     }
                     else
                     {
+                        // Captures next string as the value to this "key"
                         nextCapture = value => SetProperty(opts, match, value);
                     }
 
@@ -92,12 +97,12 @@ namespace Dirmon
                     }
 
                     // Mark this option as seen
-                    seen.Add(s);
+                    seen.Add(key);
                 }
                 else
                 {
                     // Previous input was a key, capture the value
-                    nextCapture.Invoke(s);
+                    nextCapture.Invoke(key);
                     nextCapture = null;
                 }
             }
